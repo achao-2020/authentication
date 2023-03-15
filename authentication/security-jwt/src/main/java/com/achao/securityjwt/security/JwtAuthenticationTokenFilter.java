@@ -3,6 +3,7 @@ package com.achao.securityjwt.security;
 import com.achao.securityjwt.security.JWTUserDetailsService;
 import com.achao.securityjwt.util.JWTUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -16,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author licc3
@@ -37,10 +39,14 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter{
             if(!ObjectUtils.isEmpty(username) && SecurityContextHolder.getContext().getAuthentication()==null){
                 UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
                 if(JWTUtil.verify(jwt,userDetails.getUsername(), userDetails.getPassword())){
+                    // 获取用户角色拥有的接口权限，这里使用数据库查询的方式
+                    SimpleGrantedAuthority authority1 = new SimpleGrantedAuthority("ADMIN");
+                    SimpleGrantedAuthority authority2 = new SimpleGrantedAuthority("ADMIN1");
+
                     //给使用该JWT令牌的用户进行授权
                     UsernamePasswordAuthenticationToken authenticationToken
-                            = new UsernamePasswordAuthenticationToken(userDetails,null,
-                            userDetails.getAuthorities());
+                            = new UsernamePasswordAuthenticationToken(userDetails.getUsername(),userDetails.getPassword(),
+                            List.of(authority1, authority2));
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }

@@ -14,7 +14,7 @@ public class HelloController {
 
 
     @GetMapping("/hello")
-    @PreAuthorize("hasAnyRole('admin')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'ACHAO')")
     public String hello() {
         return "hello spring security";
     }
